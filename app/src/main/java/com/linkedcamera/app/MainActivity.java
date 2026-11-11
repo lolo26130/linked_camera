@@ -5026,6 +5026,22 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                         MyDebug.logStackTrace(TAG, "failed to start review intent: " + review_action, e);
                     }
                 }
+            }
+            if( !done ) {
+                if( MyDebug.LOG )
+                    Log.d(TAG, "try ACTION_VIEW");
+                try {
+                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
+                    this.startActivity(intent);
+                }
+                catch(ActivityNotFoundException e) {
+                    MyDebug.logStackTrace(TAG, "failed to start ACTION_VIEW intent", e);
+                    preview.showToast(null, R.string.no_gallery_app);
+                }
+                catch(SecurityException e) {
+                    // have received this crash from Google Play - don't display a toast, simply do nothing
+                    MyDebug.logStackTrace(TAG, "SecurityException from ACTION_VIEW startActivity", e);
+                }
             }			
         }
     }
