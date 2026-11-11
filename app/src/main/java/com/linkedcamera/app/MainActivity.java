@@ -4997,38 +4997,36 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
             final String REVIEW_ACTION = "com.android.camera.action.REVIEW";
             boolean done = false;
             if( !is_raw ) {
-                // REVIEW_ACTION means we can view video files without autoplaying.
+                // Try the modern review action first (Android 10+), then the legacy one.
+                // The modern action is the one handled by current galleries (e.g. Glimpse),
+                // and gives a full review UI with album navigation and edit/delete actions.
+                // The legacy action is kept for older devices/galleries.
+                String[] review_actions;
+                if( Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q ) {
+                    review_actions = new String[]{MediaStore.ACTION_REVIEW, "com.android.camera.action.REVIEW"};
+                }
+                else {
+                    review_actions = new String[]{"com.android.camera.action.REVIEW"};
+                }
+                // Note: the review action means we can view video files without autoplaying.
                 // However, Google Photos at least has problems with going to a RAW photo (in RAW only mode),
                 // unless we first pause and resume Open Camera.
                 // Update: on Galaxy S10e with Android 11 at least, no longer seem to have problems, but leave
                 // the check for is_raw just in case for older devices.
-                if( MyDebug.LOG )
-                    Log.d(TAG, "try REVIEW_ACTION");
-                try {
-                    Intent intent = new Intent(REVIEW_ACTION, uri);
-                    this.startActivity(intent);
-                    done = true;
+                for( String review_action : review_actions ) {
+                    if( MyDebug.LOG )
+                        Log.d(TAG, "try review action: " + review_action);
+                    try {
+                        Intent intent = new Intent(review_action, uri);
+                        this.startActivity(intent);
+                        done = true;
+                        break;
+                    }
+                    catch(ActivityNotFoundException e) {
+                        MyDebug.logStackTrace(TAG, "failed to start review intent: " + review_action, e);
+                    }
                 }
-                catch(ActivityNotFoundException e) {
-                    MyDebug.logStackTrace(TAG, "failed to start REVIEW_ACTION intent", e);
-                }
-            }
-            if( !done ) {
-                if( MyDebug.LOG )
-                    Log.d(TAG, "try ACTION_VIEW");
-                try {
-                    Intent intent = new Intent(Intent.ACTION_VIEW, uri);
-                    this.startActivity(intent);
-                }
-                catch(ActivityNotFoundException e) {
-                    MyDebug.logStackTrace(TAG, "failed to start ACTION_VIEW intent", e);
-                    preview.showToast(null, R.string.no_gallery_app);
-                }
-                catch(SecurityException e) {
-                    // have received this crash from Google Play - don't display a toast, simply do nothing
-                    MyDebug.logStackTrace(TAG, "SecurityException from ACTION_VIEW startActivity", e);
-                }
-            }
+            }			
         }
     }
 
