@@ -4994,7 +4994,6 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
             // don't do if testing, as unclear how to exit activity to finish test (for testGallery())
             if( MyDebug.LOG )
                 Log.d(TAG, "launch uri:" + uri);
-            final String REVIEW_ACTION = "com.android.camera.action.REVIEW";
             boolean done = false;
             if( !is_raw ) {
                 // Try the modern review action first (Android 10+), then the legacy one.
@@ -5042,7 +5041,7 @@ public class MainActivity extends AppCompatActivity implements PreferenceFragmen
                     // have received this crash from Google Play - don't display a toast, simply do nothing
                     MyDebug.logStackTrace(TAG, "SecurityException from ACTION_VIEW startActivity", e);
                 }
-            }			
+            }
         }
     }
 
